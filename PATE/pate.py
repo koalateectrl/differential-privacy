@@ -6,7 +6,7 @@ from absl import flags
 from absl import app
 from absl import logging
 
-
+#flags 
 flags.DEFINE_string('dataset', 'mnist', 'The name of the dataset to use')
 flags.DEFINE_integer('nb_labels', 10, 'Number of output classes')
 
