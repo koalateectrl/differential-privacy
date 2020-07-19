@@ -112,11 +112,11 @@ def train_step(images, labels, model, optimizer, train_loss, train_accuracy):
     # print(loss)
     # print(loss.shape)
 
-    gradients = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+  gradients = tape.gradient(loss, model.trainable_variables)
+  optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
-    train_loss(loss)
-    train_accuracy(labels, predictions)
+  train_loss(loss)
+  train_accuracy(labels, predictions)
 
 
 @tf.function
