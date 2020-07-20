@@ -139,7 +139,7 @@ for agg_epochs in range(1, agg_epochs + 1):
 
 	#TODO: Average out the weights with a weighted average by partition size
 
-
+	#Can we get_weights in a format where we don't have a large nested list and can apply and transform all at once?
 
 	#is it applying the new diff weights?
 	optimizer.apply_gradients(zip(avg_weights, agg_model.trainable_variables))
