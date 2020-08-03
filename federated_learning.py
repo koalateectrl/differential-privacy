@@ -138,6 +138,7 @@ for agg_epochs in range(1, agg_epochs + 1):
 		weights_dict[num_part] = ([diff_weights, n_c])
 
 	#TODO: Average out the weights with a weighted average by partition size
+	#TODO: How to add horovod for distributed training to this?
 
 	#Can we get_weights in a format where we don't have a large nested list and can apply and transform all at once?
 
