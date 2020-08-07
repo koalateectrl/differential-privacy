@@ -141,8 +141,6 @@ def test_step(images, labels, model, test_loss, test_accuracy):
   test_accuracy(labels, predictions)
 
 
-stdnt_share = 1000
-
 
 def main(unused_argv):
   logging.set_verbosity(logging.INFO)
