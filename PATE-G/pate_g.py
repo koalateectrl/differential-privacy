@@ -27,6 +27,7 @@ flags.DEFINE_float('lap_location', 0.0, 'Location for Laplacian noise')
 flags.DEFINE_float(
     'lap_scale', 10.0, 'Scale of the Laplacian noise added for privacy')
 flags.DEFINE_integer('depth', 10, 'Number of Classes')
+flags.DEFINE_integer('gen_dim', 100, 'Dimension of Generative Input Vector')
 
 FLAGS = flags.FLAGS
 
@@ -166,8 +167,8 @@ def create_data_set():
 
   stdnt_y_ensemb = ensemble_preds(X_sup, FLAGS.nb_teachers, FLAGS.train_dir)
 
-  supervised_ds = tf.data.Dataset.from_tensor_slices((X_sup, y_sup)).shuffle(FLAGS.stdnt_share).batch(batch_size)
-  unsupervised_ds = tf.data.Dataset.from_tensor_slices(X_unsup).shuffle(9000 - FLAGS.stdnt_share).batch(batch_size)
+  supervised_ds = tf.data.Dataset.from_tensor_slices((X_sup, y_sup)).shuffle(FLAGS.stdnt_share).batch(FLAGS.batch_size)
+  unsupervised_ds = tf.data.Dataset.from_tensor_slices(X_unsup).shuffle(9000 - FLAGS.stdnt_share).batch(FLAGS.batch_size)
 
   test_ds = tf.data.Dataset.from_tensor_slices((stdnt_X_test, stdnt_y_test)).batch(len(stdnt_y_test))
 
@@ -243,7 +244,7 @@ def main(unused_argv):
   s_opt = tf.keras.optimizers.Adam(lr = 0.0002, beta_1 = 0.5)
   d_opt = tf.keras.optimizers.Adam(lr = 0.0002, beta_1 = 0.5)
 
-  g_model = make_generator_model(gen_dim)
+  g_model = make_generator_model(FLAGS.gen_dim)
   g_opt = tf.keras.optimizers.Adam(lr = 0.0002, beta_1 = 0.5)
   
   class_loss_metric = tf.keras.metrics.Mean(name = 'classification_loss')
@@ -254,6 +255,8 @@ def main(unused_argv):
 
   test_loss_metric = tf.keras.metrics.Mean(name = 'test_loss')
   test_acc_metric = tf.keras.metrics.SparseCategoricalAccuracy(name = 'test_accuracy')
+
+  half_batch_size = FLAGS.batch_size // 2
 
 
   for epoch in range(1, FLAGS.epochs + 1):
@@ -274,7 +277,7 @@ def main(unused_argv):
 
     # Train d_model/g_model (discriminator/generator)
     for unsup_images in unsupervised_ds:
-      train_unsup_step(unsup_images, half_batch_size, gen_dim, d_model, d_opt, disc_loss_metric, g_model, g_opt, gen_loss_metric)
+      train_unsup_step(unsup_images, half_batch_size, FLAGS.gen_dim, d_model, d_opt, disc_loss_metric, g_model, g_opt, gen_loss_metric)
 
     end_time = time.time()
     logging.info(f"Epoch {epoch} time in seconds: {end_time - start_time}")
