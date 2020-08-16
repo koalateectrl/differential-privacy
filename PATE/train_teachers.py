@@ -176,34 +176,8 @@ def main(unused_argv):
 if __name__ == '__main__':
   app.run(main)
 
-# class MyModel(tf.keras.Model):
-# 	def __init__(self):
-# 		super(MyModel, self).__init__()
-# 		#add weight decay?
-# 		self.conv1 = tf.keras.layers.Conv2D(filters = 64, kernel_size = (5, 5), padding = 'same', activation = 'relu')
-# 		self.pool1 = tf.keras.layers.MaxPool2D(pool_size = (2, 2), strides = (1, 1), padding = 'same')
-# 		self.norm1 = tf.keras.layers.BatchNormalization()
-# 		self.conv2 = tf.keras.layers.Conv2D(filters = 64, kernel_size = (5, 5), padding = 'same', activation = 'relu')
-# 		self.norm2 = tf.keras.layers.BatchNormalization()
-# 		self.pool2 = tf.keras.layers.MaxPool2D(pool_size = (2, 2), strides = (1, 1), padding = 'same')
-# 		self.flat = tf.keras.layers.Flatten()
-# 		self.dense1 = tf.keras.layers.Dense(384, activation = 'relu')
-# 		self.dense2 = tf.keras.layers.Dense(192, activation = 'relu')
-# 		self.dense3 = tf.keras.layers.Dense(10)
 
-# 	def call(self, x):
-# 		x = self.conv1(x)
-# 		x = self.pool1(x)
-# 		x = self.norm1(x)
-# 		x = self.conv2(x)
-# 		x = self.norm2(x)
-# 		x = self.pool2(x)
-# 		x = self.flat(x)
-# 		x = self.dense1(x)
-# 		x = self.dense2(x)
-# 		x = self.dense3(x)
-# 		return x
+#TODO: format with pylint
 
-# 	def model(self):
-# 		x = tf.keras.Input(shape = (28, 28, 1))
-# 		return tf.keras.Model(inputs = [x], outputs = self.call(x))
+
+
