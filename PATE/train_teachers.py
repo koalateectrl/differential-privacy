@@ -45,7 +45,7 @@ def partition_dataset(data, labels, nb_teachers, teacher_id):
   partition_data = data[start:end]
   partition_labels = labels[start:end]
 
-  return partition_data, partition_labels
+  return partition_data, partition_labels, batch_len
 
 
 def create_data_set():
@@ -58,14 +58,14 @@ def create_data_set():
   X_test = X_test.reshape(
       X_test.shape[0], X_test.shape[1], X_test.shape[2], -1).astype("float32")
 
-  X_train, y_train = partition_dataset(
+  X_train, y_train, batch_len = partition_dataset(
       X_train, y_train, FLAGS.nb_teachers, FLAGS.teacher_id)
 
   train_ds = tf.data.Dataset.from_tensor_slices(
-      (X_train, y_train)).shuffle(60000).batch(FLAGS.batch_size)
+      (X_train, y_train)).shuffle(X_train.shape[0]).batch(FLAGS.batch_size)
   test_ds = tf.data.Dataset.from_tensor_slices(
       (X_test, y_test)).batch(FLAGS.batch_size)
-  return train_ds, test_ds
+  return train_ds, test_ds, batch_len
 
 
 # model subclassing API
@@ -131,7 +131,7 @@ def test_step(images, labels, model, test_loss, test_accuracy):
 
 def main(unused_argv):
   logging.set_verbosity(logging.INFO)
-  train_ds, test_ds = create_data_set()
+  train_ds, test_ds, batch_len = create_data_set()
 
   filename = str(FLAGS.nb_teachers) + '_teachers_' + \
       str(FLAGS.teacher_id) + '.ckpt'
@@ -149,7 +149,11 @@ def main(unused_argv):
   test_accuracy = tf.keras.metrics.SparseCategoricalAccuracy(
       name='test_accuracy')
 
-  num_epochs = math.floor(FLAGS.max_steps / FLAGS.batch_size)
+  ### TODO: determine number of epochs, currently setting min to 100
+  print(batch_len)
+  num_epochs = min(100, math.floor(FLAGS.max_steps / math.ceil(batch_len / FLAGS.batch_size)))
+  print(num_epochs)
+  
   # Training loop.
   for epoch in range(1, num_epochs + 1):
     start_time = time.time()
