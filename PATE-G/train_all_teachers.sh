@@ -8,4 +8,4 @@ python train_teachers.py --nb_teachers=$num_teachers --teacher_id=$i --dataset=m
 done
 
 python aggregate_teachers.py --nb_teachers=$num_teachers
-# python train_student.py --nb_teachers=$num_teachers --dataset=mnist --stdnt_share=5000
+python train_student_PATEG.py --nb_teachers=$num_teachers --dataset=mnist --count=50

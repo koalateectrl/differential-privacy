@@ -8,38 +8,41 @@ from absl import logging
 flags.DEFINE_string('train_dir', '/tmp/train_dir',
                     'Where model ckpt are saved')
 
+flags.DEFINE_integer('nb_labels', 10, 'Number of output classes')
+
 flags.DEFINE_integer('nb_teachers', 50, 'Teachers in the ensemble.')
 flags.DEFINE_float('lap_location', 0.0, 'Location for Laplacian noise')
 flags.DEFINE_float(
     'lap_scale', 10.0, 'Scale of the Laplacian noise added for privacy')
-flags.DEFINE_integer('depth', 10, 'Number of Classes')
 
 FLAGS = flags.FLAGS
 
 # model subclassing API
-
-
 class MyModel(tf.keras.Model):
   def __init__(self):
     super(MyModel, self).__init__()
     self.conv1 = tf.keras.layers.Conv2D(
-        16, 8, strides=2, padding='same', activation='relu')
-    self.pool1 = tf.keras.layers.MaxPool2D(2, 1)
+        filters = 64, kernel_size = 5, strides = 1, padding='same', activation='relu')
+    self.pool1 = tf.keras.layers.MaxPool2D(pool_size = (3, 3), strides = (2, 2), padding = 'same')
     self.conv2 = tf.keras.layers.Conv2D(
-        32, 4, strides=2, padding='valid', activation='relu')
-    self.pool2 = tf.keras.layers.MaxPool2D(2, 1)
+        filters = 128, kernel_size = 5, strides = 1, padding='same', activation='relu')
+    self.pool2 = tf.keras.layers.MaxPool2D(pool_size = (3, 3), strides = (2, 2), padding = 'same')
     self.flat = tf.keras.layers.Flatten()
-    self.d1 = tf.keras.layers.Dense(32, activation='relu')
-    self.d2 = tf.keras.layers.Dense(10)
+    self.d1 = tf.keras.layers.Dense(384, activation = 'relu')
+    self.d2 = tf.keras.layers.Dense(192, activation = 'relu')
+    self.d3 = tf.keras.layers.Dense(10)
 
   def call(self, x):
     x = self.conv1(x)
     x = self.pool1(x)
+    x = tf.nn.local_response_normalization(x, depth_radius = 4, bias = 1, alpha = 0.001/9.0, beta = 0.75)
     x = self.conv2(x)
+    x = tf.nn.local_response_normalization(x, depth_radius = 4, bias = 1, alpha = 0.001/9.0, beta = 0.75)
     x = self.pool2(x)
     x = self.flat(x)
     x = self.d1(x)
     x = self.d2(x)
+    x = self.d3(x)
     return x
 
   def model(self):
@@ -69,7 +72,7 @@ def main(unused_argv):
 
   # Create a tensor of zeros
   agg_preds = tf.zeros(
-      shape=(X_test.shape[0], FLAGS.depth), dtype=tf.dtypes.float32, name=None)
+      shape=(X_test.shape[0], FLAGS.nb_labels), dtype=tf.dtypes.float32, name=None)
 
   for teacher_id in range(FLAGS.nb_teachers):
     checkpoint_path = FLAGS.train_dir + '/' + 'mnist' + '_' + \
@@ -77,7 +80,7 @@ def main(unused_argv):
     model.load_weights(checkpoint_path)
 
     max_ind = tf.argmax(predict_step(X_test, model), 1)
-    agg_preds = tf.math.add(agg_preds, tf.one_hot(max_ind, depth=FLAGS.depth))
+    agg_preds = tf.math.add(agg_preds, tf.one_hot(max_ind, depth=FLAGS.nb_labels))
 
   agg_preds_numpy = agg_preds.numpy()
 
